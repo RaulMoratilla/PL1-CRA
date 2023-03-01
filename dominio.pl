@@ -94,7 +94,8 @@ get_posibles(LA, LP, INDICE, NPOSIBLES, NTOTALES) :- numeros(NTOTALES),
                                                      conj(PB, PF, NPOSIBLES1), 
                                                      conj(NPOSIBLES1, PC, NPOSIBLES).*/
 
+poner_posibles([], LA, _).
 poner_posibles(["." | R], LA, N) :- get_posibles(LA, LP, N, NPOSIBLES, _), append(LA, LP, LB), poner_posibles(R, LB, N1), N1 is N+1.
-poner_posibles([X | R], LA, N) :- append(LA, [X], LB), poner_posibles(R, LB, N1), N1 is N+1 .
+poner_posibles([X | R], LA, N) :- N1 is N+1, append(LA, [X], LB), poner_posibles(R, LB, N1).
 
 simplificar_sudoku(L, _) :- imprimir_tablero(L), poner_posibles(L, LA, 1), imprimir_tablero(LA).
