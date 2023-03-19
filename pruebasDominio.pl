@@ -63,6 +63,14 @@ imprimir_fila([X | R]) :- write("|"), write(X), imprimir_fila(R).
 imprimir_tablero([]) :- write("-------------------"), nl, nl, nl.
 imprimir_tablero(L) :- write("-------------------"), nl, primeros(L, L1, L2, 9), imprimir_fila(L1), imprimir_tablero(L2).
 
+/*
+
+    Intersección entre dos listas
+    P1 -> L1
+    P2 -> L2
+    P3 -> Lista Resultado
+
+*/
 interseccion([], _, []).
 interseccion([X | R], L, S) :- member(X, L), interseccion(R, L, S1), append(S1, [X], S).
 interseccion([_ | R], L, S) :- interseccion(R, L, S).
@@ -74,6 +82,8 @@ contenidoC(INDICE, C) :- columna(C), member(INDICE, C).
 get(L, INDICE, X) :- INDICE2 is INDICE-1, INDICE2 >= 0, primeros(L, _, [X | _], INDICE2).
 
 numero(N) :- numeros(NS), member(N, NS).
+es_lista([]).
+es_lista([_ | _]).
 
 numeros_en_lista(_, [], []).
 numeros_en_lista(L, [X | R], NS) :- get(L, X, N), numero(N), numeros_en_lista(L, R, N1), append(N1, [N], NS).
@@ -115,6 +125,7 @@ borrar_num_lista(L, [I | RI], LN, V) :- get(L, I, N),
                                         borrar_num_lista(L, RI, LN, V).
 
 borrar_num_lista(L, [I | RI], LN, V) :- get(L, I, N),
+                                        es_lista(N),
                                         subtract(N, [V], N1),
                                         sustituir(L, LN1, I, N1),
                                         borrar_num_lista(LN1, RI, LN, V).
@@ -126,7 +137,6 @@ borrar_coincidentes(L, LN, I, N) :- contenidoB(I, B),
                                     borrar_num_lista(L, B, L1, N),
                                     borrar_num_lista(L1, F, L2, N),
                                     borrar_num_lista(L2, C, LN, N).
-
 
 regla0(L, [], L, _).
 
@@ -143,19 +153,24 @@ regla0(L, [[X] | _], LA, I) :- borrar_coincidentes(L, LN, I, X),
 regla0(L, [_ | R], LA, I) :- I1 is I+1,
                              regla0(L, R, LA, I1).
 
+/*
+    P1 -> Lista de listas
+    P2 -> Lista de repetidos
+    P3 -> Lista de unicos
+*/
 sacar_listas_regla1([[X | R]], [], [X | R]).
 
 sacar_listas_regla1([X], [X], []).
 
-sacar_listas_regla1([[X | R1] | R], LU, LI) :- sacar_listas_regla1(R, LU1, LI1),
-                                               interseccion([X | R1], LI1, LU2),
-                                               union(LU1, LU2, LU),
-                                               subtract(LI1, LU, LI2),
-                                               subtract([X | R1], LU, LI3),
-                                               union(LI2, LI3, LI).
+sacar_listas_regla1([[X | R1] | R], LR, LU) :- sacar_listas_regla1(R, LR1, LU1),
+                                               interseccion([X | R1], LU1, LR2),
+                                               union(LR1, LR2, LR),
+                                               subtract(LU1, LR, LU2),
+                                               subtract([X | R1], LR, LU3),
+                                               union(LU2, LU3, LU).
 
-sacar_listas_regla1([X | R], LU, LI) :- sacar_listas_regla1(R, LU1, LI),
-                                        append([X], LU1, LU).
+sacar_listas_regla1([X | R], LR, LU) :- sacar_listas_regla1(R, LR1, LU),
+                                        append([X], LR1, LR).
 
 get_valores(_, [], []).
 
@@ -163,22 +178,45 @@ get_valores(L, [I | RI], V) :- get_valores(L, RI, V1),
                                get(L, I, N),
                                append([N], V1, V).
 
+sustituir_elemento(L, L, _, []).
+
+/*
+    Si aparece en el primero seguimos iterando ¿?
+*/
+sustituir_elemento(L, LA, V, [PI | RI]) :- get(L, PI, N),
+                                           es_lista(N),
+                                           member(V, N),
+                                           sustituir(L, LA1, PI, V),
+                                           borrar_coincidentes(LA1, LA2, PI, V),
+                                           sustituir_elemento(LA2, LA, V, RI).
+
+sustituir_elemento(L, LA, V, [_ | RI]) :- sustituir_elemento(L, LA, V, RI).
+
+
+sustituir_si_aparece(L, L, [], _). 
+
+sustituir_si_aparece(L, LA, [PLUB | RLUB], IDS) :- sustituir_elemento(L, LA1, PLUB, IDS),
+                                                   sustituir_si_aparece(LA1, LA, RLUB, IDS).
+
 regla1(L, [], L, _).
 
-regla1(L, [X | R], LA, I) :- contenidoF(I, F),
-                             get_valores(L, IDS, LV),
-                             sacar_listas_regla1(LV, LUF, [PLI | RLI]).
-                             
-                             
-
-regla1(L, [[X] | _], LA, I) :- borrar_coincidentes(L, LN, I, X),
-                               I1 is I+1,
-                               primeros(LN, _, R1, I),
-                               regla0(LN, R1, LA1, I1),
-                               sustituir(LA1, LA, I, X).
-
-regla1(L, [_ | R], LA, I) :- I1 is I+1,
-                             regla0(L, R, LA, I1).
+/*
+    Estamos iterando varias veces cada fila, col, bloque
+*/
+regla1(L, [_ | R], LA, I) :- contenidoB(I, B),
+                             contenidoC(I, C),
+                             contenidoF(I, F),
+                             get_valores(L, B, VB),
+                             get_valores(L, C, VC),
+                             get_valores(L, F, VF),
+                             sacar_listas_regla1(VB, _, LUB),
+                             sacar_listas_regla1(VC, _, LUC),
+                             sacar_listas_regla1(VF, _, LUF),
+                             sustituir_si_aparece(L, LA1, LUB, B),
+                             sustituir_si_aparece(LA1, LA2, LUC, C),
+                             sustituir_si_aparece(LA2, LA3, LUF, F),
+                             I1 is I + 1,
+                             regla1(LA3, R, LA, I1).
 
 simplificar_sudoku(L, _) :- imprimir_tablero(L), 
                             poner_posibles(L, L, LA, 1), 
@@ -186,5 +224,6 @@ simplificar_sudoku(L, _) :- imprimir_tablero(L),
                             regla0(LA, LA, LA1, 1),
                             imprimir_tablero(LA1),
                             regla1(LA1, LA1, LA2, 1),
-                            imprimir_tablero(LA2).
+                            regla0(LA2, LA2, LA3, 1),
+                            imprimir_tablero(LA3).
 
