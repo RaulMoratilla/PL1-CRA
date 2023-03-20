@@ -545,10 +545,10 @@ sacar_n_iguales([], [], _).
 
 sacar_n_iguales([X | R], LP, N) :- es_lista(X),
                                    length(X, N),
-                                   member_conj([X, Y], R, CONT),
+                                   member_conj(X, R, CONT),
                                    CONT is N-1,
                                    sacar_n_iguales(R, LP1, N),
-                                   append(LP1, [[X, Y]], LP).
+                                   append(LP1, [X], LP).
 
 sacar_n_iguales([_ | R], LP, N) :- sacar_n_iguales(R, LP, N).
 
@@ -597,67 +597,29 @@ regla_n(L, [_ | R], LA, I, N) :- contenidoB(I, B),
                                  I1 is I + 1,
                                  regla_n(LA3, R, LA, I1, N).
 
-regla2(L, [], L, _).
+aplicar_reglas(L, L, L).
 
-regla2(L, [_ | R], LA, I) :- contenidoB(I, B),
-                             contenidoC(I, C),
-                             contenidoF(I, F),
-                             get_valores(L, B, VB),
-                             get_valores(L, C, VC),
-                             get_valores(L, F, VF),
-                             sacar_n_iguales(VB, LPB, 2),
-                             sacar_n_iguales(VC, LPC, 2),
-                             sacar_n_iguales(VF, LPF, 2),
-                             sustituir_si_aparece(L, LA1, LPB, B),
-                             sustituir_si_aparece(LA1, LA2, LPC, C),
-                             sustituir_si_aparece(LA2, LA3, LPF, F),
-                             I1 is I + 1,
-                             regla2(LA3, R, LA, I1).
+aplicar_reglas(L, _, LA) :- regla0(L, L, LA1, 1),
+                            write("Regla0"), nl,
+                            imprimir_tablero(LA1),
 
-regla3(L, [], L, _).
-
-regla3(L, [_ | R], LA, I) :- contenidoB(I, B),
-                             contenidoC(I, C),
-                             contenidoF(I, F),
-                             get_valores(L, B, VB),
-                             get_valores(L, C, VC),
-                             get_valores(L, F, VF),
-                             sacar_n_iguales(VB, LPB, 3),
-                             sacar_n_iguales(VC, LPC, 3),
-                             sacar_n_iguales(VF, LPF, 3),
-                             sustituir_si_aparece(L, LA1, LPB, B),
-                             sustituir_si_aparece(LA1, LA2, LPC, C),
-                             sustituir_si_aparece(LA2, LA3, LPF, F),
-                             I1 is I + 1,
-                             regla3(LA3, R, LA, I1).
-
-tablero_completo([], []).
-tablero_completo([P | R], [P | R]) :- numero(P), tablero_completo(R, R).
-
-aplicar_reglas(L, LA) :- regla0(L, L, LA1, 1),
-                         write("Regla0"), nl,
-                         imprimir_tablero(LA1),
-
-                         regla1(LA1, LA1, LA2, 1),
-                         write("Regla1"), nl,
-                         imprimir_tablero(LA2),
-
-                         regla_n(LA2, LA2, LA3, 1, 2),
-                         write("Regla2"), nl,
-                         imprimir_tablero(LA3),
+                            regla1(LA1, LA1, LA2, 1),
+                            write("Regla1"), nl,
+                            imprimir_tablero(LA2),
                          
-                         regla_n(LA3, LA3, LA4, 1, 3),
-                         write("Regla3"), nl,
-                         imprimir_tablero(LA4),
+                            regla_n(LA2, LA2, LA3, 1, 2),
+                            write("Regla2"), nl,
+                            imprimir_tablero(LA3),
 
-                         regla_n(LA4, LA4, LA5, 1, 4),
-                         write("Regla4"), nl,
-                         imprimir_tablero(LA5),
+                            regla_n(LA3, LA3, LA4, 1, 3),
+                            write("Regla3"), nl,
+                            imprimir_tablero(LA4),
 
-                         aplicar(LA8, LA).
+                            regla_n(LA4, LA4, LA5, 1, 4),
+                            write("Regla4"), nl,
+                            imprimir_tablero(LA5),
 
-aplicar(L, LA) :- tablero_completo(L, LA).
-aplicar(L, LA) :- aplicar_reglas(L, LA).
+                            aplicar_reglas(LA5, L, LA).
 
 simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
                              imprimir_tablero(L),
@@ -665,7 +627,7 @@ simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
 
                              write("Tablero con posibles"), nl,
                              imprimir_tablero(LA1),
-                             aplicar(LA1, LA),
+                             aplicar_reglas(LA1, [], LA),
 
                              write("Tablero simplificado"), nl,
                              imprimir_tablero(LA).
