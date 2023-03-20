@@ -518,19 +518,15 @@ regla1(L, [], L, _).
 regla1(L, [_ | R], LA, I) :- contenidoB(I, B),
                              contenidoC(I, C),
                              contenidoF(I, F),
-                             write("aaa"), nl, write(B), nl, write(C), nl, write(F), nl,
                              get_valores(L, B, VB),
                              get_valores(L, C, VC),
                              get_valores(L, F, VF),
-                             write("bbb"), nl, write(VB), nl, write(VC), nl, write(VF), nl,
                              sacar_listas_regla1(VB, _, LUB),
                              sacar_listas_regla1(VC, _, LUC),
                              sacar_listas_regla1(VF, _, LUF),
-                             write("ccc"), write(LUB), nl, write(LUC), nl, write(LUF), nl,
                              sustituir_si_aparece_regla1(L, LA1, LUB, B),
                              sustituir_si_aparece_regla1(LA1, LA2, LUC, C),
                              sustituir_si_aparece_regla1(LA2, LA3, LUF, F),
-                             write("ddd"), nl,
                              I1 is I + 1,
                              regla1(LA3, R, LA, I1).
 
@@ -545,14 +541,16 @@ member_conj(L, [_ | R], CONT) :- member_conj(L, R, CONT).
 
 member_conj(_, _, 0).
 
-sacar_parejas_regla2([], []).
+sacar_n_iguales([], [], _).
 
-sacar_parejas_regla2([[X, Y] | R], LP) :- member_conj([X, Y], R, CONT),
-                                                CONT is 1,
-                                                sacar_parejas_regla2(R, LP1),
-                                                append(LP1, [[X, Y]], LP).
+sacar_n_iguales([X | R], LP, N) :- es_lista(X),
+                                   length(X, N),
+                                   member_conj([X, Y], R, CONT),
+                                   CONT is N-1,
+                                   sacar_n_iguales(R, LP1, N),
+                                   append(LP1, [[X, Y]], LP).
 
-sacar_parejas_regla2([_ | R], LP) :- sacar_parejas_regla2(R, LP).
+sacar_n_iguales([_ | R], LP, N) :- sacar_n_iguales(R, LP, N).
 
 eliminar_elemento(L, L, [], _).
 
@@ -561,26 +559,43 @@ eliminar_elemento(L, LA, [P | R], I) :- get(L, I, V),
                                         sustituir(L, LA1, I, NV),
                                         eliminar_elemento(LA1, LA, R, I).
 
-eliminar_elementos_pareja(L, L, _, []).
+eliminar_elementos_lista(L, L, _, []).
 
-eliminar_elementos_pareja(L, LA, P, [PI | RI]) :- sort(P, NP),
-                                                  get(L, PI, V),
-                                                  es_lista(V),
-                                                  sort(V, NV),
-                                                  NP = NV,
-                                                  eliminar_elementos_pareja(L, LA, P, RI).
+eliminar_elementos_lista(L, LA, P, [PI | RI]) :- sort(P, NP),
+                                                 get(L, PI, V),
+                                                 es_lista(V),
+                                                 sort(V, NV),
+                                                 NP = NV,
+                                                 eliminar_elementos_lista(L, LA, P, RI).
 
-eliminar_elementos_pareja(L, LA, P, [PI | RI]) :- get(L, PI, V),
-                                                  es_lista(V),
-                                                  eliminar_elemento(L, LA1, P, PI),
-                                                  eliminar_elementos_pareja(LA1, LA, P, RI).
+eliminar_elementos_lista(L, LA, P, [PI | RI]) :- get(L, PI, V),
+                                                 es_lista(V),
+                                                 eliminar_elemento(L, LA1, P, PI),
+                                                 eliminar_elementos_lista(LA1, LA, P, RI).
 
-eliminar_elementos_pareja(L, LA, P, [_ | RI]) :- eliminar_elementos_pareja(L, LA, P, RI).
+eliminar_elementos_lista(L, LA, P, [_ | RI]) :- eliminar_elementos_lista(L, LA, P, RI).
 
-sustituir_si_aparece_regla2(L, L, [], _).
+sustituir_si_aparece(L, L, [], _).
 
-sustituir_si_aparece_regla2(L, LA, [PLP | RLP], IDS) :- eliminar_elementos_pareja(L, LA1, PLP, IDS),
-                                                        sustituir_si_aparece_regla2(LA1, LA, RLP, IDS).
+sustituir_si_aparece(L, LA, [PLN | RLN], IDS) :- eliminar_elementos_lista(L, LA1, PLN, IDS),
+                                                 sustituir_si_aparece(LA1, LA, RLN, IDS).
+
+regla_n(L, [], L, _, _).
+
+regla_n(L, [_ | R], LA, I, N) :- contenidoB(I, B),
+                                 contenidoC(I, C),
+                                 contenidoF(I, F),
+                                 get_valores(L, B, VB),
+                                 get_valores(L, C, VC),
+                                 get_valores(L, F, VF),
+                                 sacar_n_iguales(VB, LPB, N),
+                                 sacar_n_iguales(VC, LPC, N),
+                                 sacar_n_iguales(VF, LPF, N),
+                                 sustituir_si_aparece(L, LA1, LPB, B),
+                                 sustituir_si_aparece(LA1, LA2, LPC, C),
+                                 sustituir_si_aparece(LA2, LA3, LPF, F),
+                                 I1 is I + 1,
+                                 regla_n(LA3, R, LA, I1, N).
 
 regla2(L, [], L, _).
 
@@ -590,17 +605,34 @@ regla2(L, [_ | R], LA, I) :- contenidoB(I, B),
                              get_valores(L, B, VB),
                              get_valores(L, C, VC),
                              get_valores(L, F, VF),
-                             sacar_parejas_regla2(VB, LPB),
-                             sacar_parejas_regla2(VC, LPC),
-                             sacar_parejas_regla2(VF, LPF),
-                             sustituir_si_aparece_regla2(L, LA1, LPB, B),
-                             sustituir_si_aparece_regla2(LA1, LA2, LPC, C),
-                             sustituir_si_aparece_regla2(LA2, LA3, LPF, F),
+                             sacar_n_iguales(VB, LPB, 2),
+                             sacar_n_iguales(VC, LPC, 2),
+                             sacar_n_iguales(VF, LPF, 2),
+                             sustituir_si_aparece(L, LA1, LPB, B),
+                             sustituir_si_aparece(LA1, LA2, LPC, C),
+                             sustituir_si_aparece(LA2, LA3, LPF, F),
                              I1 is I + 1,
                              regla2(LA3, R, LA, I1).
 
-tablero_completo([]).
-tablero_completo([P | R]) :- numero(P), tablero_completo(R).
+regla3(L, [], L, _).
+
+regla3(L, [_ | R], LA, I) :- contenidoB(I, B),
+                             contenidoC(I, C),
+                             contenidoF(I, F),
+                             get_valores(L, B, VB),
+                             get_valores(L, C, VC),
+                             get_valores(L, F, VF),
+                             sacar_n_iguales(VB, LPB, 3),
+                             sacar_n_iguales(VC, LPC, 3),
+                             sacar_n_iguales(VF, LPF, 3),
+                             sustituir_si_aparece(L, LA1, LPB, B),
+                             sustituir_si_aparece(LA1, LA2, LPC, C),
+                             sustituir_si_aparece(LA2, LA3, LPF, F),
+                             I1 is I + 1,
+                             regla3(LA3, R, LA, I1).
+
+tablero_completo([], []).
+tablero_completo([P | R], [P | R]) :- numero(P), tablero_completo(R, R).
 
 aplicar_reglas(L, LA) :- regla0(L, L, LA1, 1),
                          write("Regla0"), nl,
@@ -610,15 +642,22 @@ aplicar_reglas(L, LA) :- regla0(L, L, LA1, 1),
                          write("Regla1"), nl,
                          imprimir_tablero(LA2),
 
-                         regla2(LA2, LA2, LA, 1),
+                         regla_n(LA2, LA2, LA3, 1, 2),
                          write("Regla2"), nl,
-                         imprimir_tablero(LA),
+                         imprimir_tablero(LA3),
+                         
+                         regla_n(LA3, LA3, LA4, 1, 3),
+                         write("Regla3"), nl,
+                         imprimir_tablero(LA4),
 
-                         write("pasada"), nl,
-                         aplicar(LA, LA).
+                         regla_n(LA4, LA4, LA5, 1, 4),
+                         write("Regla4"), nl,
+                         imprimir_tablero(LA5),
 
-aplicar(L, _) :- write("----1----"), nl, tablero_completo(L), write("----2----"), nl.
-aplicar(L, LA) :- write("----3----"), nl, aplicar_reglas(L, LA), write("-----4----"), nl.
+                         aplicar(LA8, LA).
+
+aplicar(L, LA) :- tablero_completo(L, LA).
+aplicar(L, LA) :- aplicar_reglas(L, LA).
 
 simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
                              imprimir_tablero(L),
@@ -630,27 +669,3 @@ simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
 
                              write("Tablero simplificado"), nl,
                              imprimir_tablero(LA).
-                            
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-simplificar_sudoku(L, _) :- imprimir_tablero(L), 
-                            poner_posibles(L, L, LA, 1), 
-                            imprimir_tablero(LA), 
-                            regla0(LA, LA, LA1, 1),
-                            imprimir_tablero(LA1),
-                            regla1(LA1, LA1, LA2, 1),
-                            regla0(LA2, LA2, LA3, 1),
-                            imprimir_tablero(LA3).*/
-
