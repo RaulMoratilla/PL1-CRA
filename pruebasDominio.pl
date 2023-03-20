@@ -450,10 +450,6 @@ borrar_coincidentes(L, LN, I, N) :- contenidoB(I, B),
 
 regla0(L, [], L, _).
 
-regla0(L, [X | R], LA, I) :- numero(X),
-                             I1 is I+1,
-                             regla0(L, R, LA, I1).
-
 regla0(L, [[X] | _], LA, I) :- borrar_coincidentes(L, LN, I, X),
                                I1 is I+1,
                                primeros(LN, _, R1, I),
@@ -618,7 +614,7 @@ aplicar_reglas(L, _, LA) :- regla0(L, L, LA1, 1),
                             %imprimir_tablero(LA5),
 
                             aplicar_reglas(LA5, L, LA).
-
+                            
 simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
                              imprimir_tablero(L),
                              poner_posibles(L, L, LA1, 1),
