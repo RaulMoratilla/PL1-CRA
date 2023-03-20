@@ -595,20 +595,18 @@ regla2(L, [_ | R], LA, I) :- contenidoB(I, B),
                              I1 is I + 1,
                              regla2(LA3, R, LA, I1).
 
-aplicar_reglas(L, LA) :- regla0(LA1, LA1, LA2, 1),
-                         imprimir_tablero(LA2),
-                         regla1(LA2, LA2, LA3, 1),
-                         regla0(LA3, LA3, LA, 1),
+aplicar_reglas(L, LA) :- regla0(L, L, LA1, 1),
+                         regla1(LA1, LA1, LA, 1),
                          imprimir_tablero(LA),
                          aplicar(L, LA).
 
-aplicar(L, LA) :- L = LA.
-aplicar(L, LA) :- aplicar_reglas(L, LA).
+aplicar(L, LA) :- write("iguales"), nl, L = LA.
+aplicar(L, LA) :- write("distintos"), nl, aplicar_reglas(L, LA).
 
 simplificar_sudoku(L, LA) :- imprimir_tablero(L), 
                              poner_posibles(L, L, LA1, 1), 
                              imprimir_tablero(LA1), 
-                             aplicar_reglas(LA1, LA),
+                             aplicar(L, LA1),
                              imprimir_tablero(LA).
                             
 
