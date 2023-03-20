@@ -2,35 +2,35 @@
 
 numeros(["1","2","3","4","5","6","7","8","9"]).
 
-bloque([1,2,3,10,11,12,19,20,21]).
-bloque([4,5,6,13,14,15,22,23,24]).
-bloque([7,8,9,16,17,18,25,26,27]).
-bloque([28,29,30,37,38,39,46,47,48]).
-bloque([31,32,33,40,41,42,49,50,51]).
-bloque([34,35,36,43,44,45,52,53,54]).
-bloque([55,56,57,64,65,66,73,74,75]).
-bloque([58,59,60,67,68,69,76,77,78]).
-bloque([61,62,63,70,71,72,79,80,81]).
+bloque(1, [1,2,3,10,11,12,19,20,21]).
+bloque(2, [4,5,6,13,14,15,22,23,24]).
+bloque(3, [7,8,9,16,17,18,25,26,27]).
+bloque(4, [28,29,30,37,38,39,46,47,48]).
+bloque(5, [31,32,33,40,41,42,49,50,51]).
+bloque(6, [34,35,36,43,44,45,52,53,54]).
+bloque(7, [55,56,57,64,65,66,73,74,75]).
+bloque(8, [58,59,60,67,68,69,76,77,78]).
+bloque(9, [61,62,63,70,71,72,79,80,81]).
 
-fila([1,2,3,4,5,6,7,8,9]).
-fila([10,11,12,13,14,15,16,17,18]).
-fila([19,20,21,22,23,24,25,26,27]).
-fila([28,29,30,31,32,33,34,35,36]).
-fila([37,38,39,40,41,42,43,44,45]).
-fila([46,47,48,49,50,51,52,53,54]).
-fila([55,56,57,58,59,60,61,62,63]).
-fila([64,65,66,67,68,69,70,71,72]).
-fila([73,74,75,76,77,78,79,80,81]).
+fila(1, [1,2,3,4,5,6,7,8,9]).
+fila(2, [10,11,12,13,14,15,16,17,18]).
+fila(3, [19,20,21,22,23,24,25,26,27]).
+fila(4, [28,29,30,31,32,33,34,35,36]).
+fila(5, [37,38,39,40,41,42,43,44,45]).
+fila(6, [46,47,48,49,50,51,52,53,54]).
+fila(7, [55,56,57,58,59,60,61,62,63]).
+fila(8, [64,65,66,67,68,69,70,71,72]).
+fila(9, [73,74,75,76,77,78,79,80,81]).
 
-columna([1,10,19,28,37,46,55,64,73]).
-columna([2,11,20,29,38,47,56,65,74]).
-columna([3,12,21,30,39,48,57,66,75]).
-columna([4,13,22,31,40,49,58,67,76]).
-columna([5,14,23,32,41,50,59,68,77]).
-columna([6,15,24,33,42,51,60,69,78]).
-columna([7,16,25,34,43,52,61,70,79]).
-columna([8,17,26,35,44,53,62,71,80]).
-columna([9,18,27,36,45,54,63,72,81]).
+columna(1, [1,10,19,28,37,46,55,64,73]).
+columna(2, [2,11,20,29,38,47,56,65,74]).
+columna(3, [3,12,21,30,39,48,57,66,75]).
+columna(4, [4,13,22,31,40,49,58,67,76]).
+columna(5, [5,14,23,32,41,50,59,68,77]).
+columna(6, [6,15,24,33,42,51,60,69,78]).
+columna(7, [7,16,25,34,43,52,61,70,79]).
+columna(8, [8,17,26,35,44,53,62,71,80]).
+columna(9, [9,18,27,36,45,54,63,72,81]).
 
 sudoku_prueba1(["." , "." , "3" ,   "." , "2" , "." ,   "7" , "." , "." ,
                 "5" , "." , "." ,   "." , "." , "." ,   "4" , "." , "3" ,
@@ -387,18 +387,16 @@ interseccion([], _, []).
 interseccion([X | R], L, S) :- member(X, L), interseccion(R, L, S1), append(S1, [X], S).
 interseccion([_ | R], L, S) :- interseccion(R, L, S).
 
-contenidoB(INDICE, B) :- bloque(B), member(INDICE, B).
-contenidoF(INDICE, F) :- fila(F), member(INDICE, F).
-contenidoC(INDICE, C) :- columna(C), member(INDICE, C).
-
-get(L, INDICE, X) :- INDICE2 is INDICE-1, INDICE2 >= 0, primeros(L, _, [X | _], INDICE2).
+contenidoB(INDICE, B) :- bloque(_,B), member(INDICE, B).
+contenidoF(INDICE, F) :- fila(_,F), member(INDICE, F).
+contenidoC(INDICE, C) :- columna(_,C), member(INDICE, C).
 
 numero(N) :- numeros(NS), member(N, NS).
 es_lista([]).
 es_lista([_ | _]).
 
 numeros_en_lista(_, [], []).
-numeros_en_lista(L, [X | R], NS) :- get(L, X, N), numero(N), numeros_en_lista(L, R, N1), append(N1, [N], NS).
+numeros_en_lista(L, [X | R], NS) :- nth1(X, L, N), numero(N), numeros_en_lista(L, R, N1), append(N1, [N], NS).
 numeros_en_lista(L, [_ | R], NS) :- numeros_en_lista(L, R, NS).
 
 numeros_not_en_lista(L, LI, N) :- numeros_en_lista(L, LI, N1), numeros(N2), subtract(N2, N1, N).
@@ -432,11 +430,11 @@ sustituir(L, LN, I, V) :- I2 is I-1, primeros(L, PR, [_ | R], I2), append(PR, [V
 
 borrar_num_lista(L, [], L, _).
 
-borrar_num_lista(L, [I | RI], LN, V) :- get(L, I, N),
+borrar_num_lista(L, [I | RI], LN, V) :- nth1(I, L, N),
                                         numero(N),
                                         borrar_num_lista(L, RI, LN, V).
 
-borrar_num_lista(L, [I | RI], LN, V) :- get(L, I, N),
+borrar_num_lista(L, [I | RI], LN, V) :- nth1(I, L, N),
                                         es_lista(N),
                                         subtract(N, [V], N1),
                                         sustituir(L, LN1, I, N1),
@@ -487,7 +485,7 @@ sacar_listas_regla1([X | R], LR, LU) :- sacar_listas_regla1(R, LR1, LU),
 get_valores(_, [], []).
 
 get_valores(L, [I | RI], V) :- get_valores(L, RI, V1),
-                               get(L, I, N),
+                               nth1(I, L, N),
                                append([N], V1, V).
 
 sustituir_elemento(L, L, _, []).
@@ -495,7 +493,7 @@ sustituir_elemento(L, L, _, []).
 /*
     Si aparece en el primero seguimos iterando ¿?
 */
-sustituir_elemento(L, LA, V, [PI | RI]) :- get(L, PI, N),
+sustituir_elemento(L, LA, V, [PI | RI]) :- nth1(PI, L, N),
                                            es_lista(N),
                                            member(V, N),
                                            sustituir(L, LA1, PI, V),
@@ -510,25 +508,25 @@ sustituir_si_aparece_regla1(L, L, [], _).
 sustituir_si_aparece_regla1(L, LA, [PLUB | RLUB], IDS) :- sustituir_elemento(L, LA1, PLUB, IDS),
                                                           sustituir_si_aparece_regla1(LA1, LA, RLUB, IDS).
 
-regla1(L, [], L, _).
+regla1(L, L, 10).
 
 /*
     Estamos iterando varias veces cada fila, col, bloque (habria que cambiarlo)
 */
-regla1(L, [_ | R], LA, I) :- contenidoB(I, B),
-                             contenidoC(I, C),
-                             contenidoF(I, F),
-                             get_valores(L, B, VB),
-                             get_valores(L, C, VC),
-                             get_valores(L, F, VF),
-                             sacar_listas_regla1(VB, _, LUB),
-                             sacar_listas_regla1(VC, _, LUC),
-                             sacar_listas_regla1(VF, _, LUF),
-                             sustituir_si_aparece_regla1(L, LA1, LUB, B),
-                             sustituir_si_aparece_regla1(LA1, LA2, LUC, C),
-                             sustituir_si_aparece_regla1(LA2, LA3, LUF, F),
-                             I1 is I + 1,
-                             regla1(LA3, R, LA, I1).
+regla1(L, LA, I) :- bloque(I, B),
+                    columna(I, C),
+                    fila(I, F),
+                    get_valores(L, B, VB),
+                    get_valores(L, C, VC),
+                    get_valores(L, F, VF),
+                    sacar_listas_regla1(VB, _, LUB),
+                    sacar_listas_regla1(VC, _, LUC),
+                    sacar_listas_regla1(VF, _, LUF),
+                    sustituir_si_aparece_regla1(L, LA1, LUB, B),
+                    sustituir_si_aparece_regla1(LA1, LA2, LUC, C),
+                    sustituir_si_aparece_regla1(LA2, LA3, LUF, F),
+                    I1 is I + 1,
+                    regla1(LA3, LA, I1).
 
 member_conj(L, [P | R], CONT) :- es_lista(P),
                                  sort(L, NL),
@@ -554,7 +552,7 @@ sacar_n_iguales([_ | R], LP, N) :- sacar_n_iguales(R, LP, N).
 
 eliminar_elemento(L, L, [], _).
 
-eliminar_elemento(L, LA, [P | R], I) :- get(L, I, V),
+eliminar_elemento(L, LA, [P | R], I) :- nth1(I, L, V),
                                         subtract(V, [P], NV),
                                         sustituir(L, LA1, I, NV),
                                         eliminar_elemento(LA1, LA, R, I).
@@ -562,13 +560,13 @@ eliminar_elemento(L, LA, [P | R], I) :- get(L, I, V),
 eliminar_elementos_lista(L, L, _, []).
 
 eliminar_elementos_lista(L, LA, P, [PI | RI]) :- sort(P, NP),
-                                                 get(L, PI, V),
+                                                 nth1(PI, L, V),
                                                  es_lista(V),
                                                  sort(V, NV),
                                                  NP = NV,
                                                  eliminar_elementos_lista(L, LA, P, RI).
 
-eliminar_elementos_lista(L, LA, P, [PI | RI]) :- get(L, PI, V),
+eliminar_elementos_lista(L, LA, P, [PI | RI]) :- nth1(PI, L, V),
                                                  es_lista(V),
                                                  eliminar_elemento(L, LA1, P, PI),
                                                  eliminar_elementos_lista(LA1, LA, P, RI).
@@ -580,44 +578,44 @@ sustituir_si_aparece(L, L, [], _).
 sustituir_si_aparece(L, LA, [PLN | RLN], IDS) :- eliminar_elementos_lista(L, LA1, PLN, IDS),
                                                  sustituir_si_aparece(LA1, LA, RLN, IDS).
 
-regla_n(L, [], L, _, _).
+regla_n(L, L, 10, _).
 
-regla_n(L, [_ | R], LA, I, N) :- contenidoB(I, B),
-                                 contenidoC(I, C),
-                                 contenidoF(I, F),
-                                 get_valores(L, B, VB),
-                                 get_valores(L, C, VC),
-                                 get_valores(L, F, VF),
-                                 sacar_n_iguales(VB, LPB, N),
-                                 sacar_n_iguales(VC, LPC, N),
-                                 sacar_n_iguales(VF, LPF, N),
-                                 sustituir_si_aparece(L, LA1, LPB, B),
-                                 sustituir_si_aparece(LA1, LA2, LPC, C),
-                                 sustituir_si_aparece(LA2, LA3, LPF, F),
-                                 I1 is I + 1,
-                                 regla_n(LA3, R, LA, I1, N).
+regla_n(L, LA, I, N) :- bloque(I, B),
+                        columna(I, C),
+                        fila(I, F),
+                        get_valores(L, B, VB),
+                        get_valores(L, C, VC),
+                        get_valores(L, F, VF),
+                        sacar_n_iguales(VB, LPB, N),
+                        sacar_n_iguales(VC, LPC, N),
+                        sacar_n_iguales(VF, LPF, N),
+                        sustituir_si_aparece(L, LA1, LPB, B),
+                        sustituir_si_aparece(LA1, LA2, LPC, C),
+                        sustituir_si_aparece(LA2, LA3, LPF, F),
+                        I1 is I + 1,
+                        regla_n(LA3, LA, I1, N).
 
 aplicar_reglas(L, L, L).
 
 aplicar_reglas(L, _, LA) :- regla0(L, L, LA1, 1),
-                            write("Regla0"), nl,
-                            imprimir_tablero(LA1),
+                            %write("Regla0"), nl,
+                            %imprimir_tablero(LA1),
 
-                            regla1(LA1, LA1, LA2, 1),
-                            write("Regla1"), nl,
-                            imprimir_tablero(LA2),
+                            regla1(LA1, LA2, 1),
+                            %write("Regla1"), nl,
+                            %imprimir_tablero(LA2),
                          
-                            regla_n(LA2, LA2, LA3, 1, 2),
-                            write("Regla2"), nl,
-                            imprimir_tablero(LA3),
+                            regla_n(LA2, LA3, 1, 2),
+                            %write("Regla2"), nl,
+                            %imprimir_tablero(LA3),
 
-                            regla_n(LA3, LA3, LA4, 1, 3),
-                            write("Regla3"), nl,
-                            imprimir_tablero(LA4),
+                            regla_n(LA3, LA4, 1, 3),
+                            %write("Regla3"), nl,
+                            %imprimir_tablero(LA4),
 
-                            regla_n(LA4, LA4, LA5, 1, 4),
-                            write("Regla4"), nl,
-                            imprimir_tablero(LA5),
+                            regla_n(LA4, LA5, 1, 4),
+                            %write("Regla4"), nl,
+                            %imprimir_tablero(LA5),
 
                             aplicar_reglas(LA5, L, LA).
 
