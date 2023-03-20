@@ -518,15 +518,19 @@ regla1(L, [], L, _).
 regla1(L, [_ | R], LA, I) :- contenidoB(I, B),
                              contenidoC(I, C),
                              contenidoF(I, F),
+                             write("aaa"), nl, write(B), nl, write(C), nl, write(F), nl,
                              get_valores(L, B, VB),
                              get_valores(L, C, VC),
                              get_valores(L, F, VF),
+                             write("bbb"), nl, write(VB), nl, write(VC), nl, write(VF), nl,
                              sacar_listas_regla1(VB, _, LUB),
                              sacar_listas_regla1(VC, _, LUC),
                              sacar_listas_regla1(VF, _, LUF),
+                             write("ccc"), write(LUB), nl, write(LUC), nl, write(LUF), nl,
                              sustituir_si_aparece_regla1(L, LA1, LUB, B),
                              sustituir_si_aparece_regla1(LA1, LA2, LUC, C),
                              sustituir_si_aparece_regla1(LA2, LA3, LUF, F),
+                             write("ddd"), nl,
                              I1 is I + 1,
                              regla1(LA3, R, LA, I1).
 
@@ -595,18 +599,36 @@ regla2(L, [_ | R], LA, I) :- contenidoB(I, B),
                              I1 is I + 1,
                              regla2(LA3, R, LA, I1).
 
+tablero_completo([]).
+tablero_completo([P | R]) :- numero(P), tablero_completo(R).
+
 aplicar_reglas(L, LA) :- regla0(L, L, LA1, 1),
-                         regla1(LA1, LA1, LA, 1),
+                         write("Regla0"), nl,
+                         imprimir_tablero(LA1),
+
+                         regla1(LA1, LA1, LA2, 1),
+                         write("Regla1"), nl,
+                         imprimir_tablero(LA2),
+
+                         regla2(LA2, LA2, LA, 1),
+                         write("Regla2"), nl,
                          imprimir_tablero(LA),
-                         aplicar(L, LA).
 
-aplicar(L, LA) :- write("iguales"), nl, L = LA.
-aplicar(L, LA) :- write("distintos"), nl, aplicar_reglas(L, LA).
+                         write("pasada"), nl,
+                         aplicar(LA, LA).
 
-simplificar_sudoku(L, LA) :- imprimir_tablero(L), 
-                             poner_posibles(L, L, LA1, 1), 
-                             imprimir_tablero(LA1), 
-                             aplicar(L, LA1),
+aplicar(L, _) :- write("----1----"), nl, tablero_completo(L), write("----2----"), nl.
+aplicar(L, LA) :- write("----3----"), nl, aplicar_reglas(L, LA), write("-----4----"), nl.
+
+simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
+                             imprimir_tablero(L),
+                             poner_posibles(L, L, LA1, 1),
+
+                             write("Tablero con posibles"), nl,
+                             imprimir_tablero(LA1),
+                             aplicar(LA1, LA),
+
+                             write("Tablero simplificado"), nl,
                              imprimir_tablero(LA).
                             
 
