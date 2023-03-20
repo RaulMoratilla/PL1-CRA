@@ -430,31 +430,35 @@ sustituir(L, LN, I, V) :- I2 is I-1, primeros(L, PR, [_ | R], I2), append(PR, [V
 
 borrar_num_lista(L, [], L, _).
 
-borrar_num_lista(L, [I | RI], LN, V) :- nth1(I, L, N),
-                                        numero(N),
-                                        borrar_num_lista(L, RI, LN, V).
+borrar_num_lista(L, [I | RI], LN, V) :- 
+    nth1(I, L, N),
+    numero(N),
+    borrar_num_lista(L, RI, LN, V).
 
-borrar_num_lista(L, [I | RI], LN, V) :- nth1(I, L, N),
-                                        es_lista(N),
-                                        subtract(N, [V], N1),
-                                        sustituir(L, LN1, I, N1),
-                                        borrar_num_lista(LN1, RI, LN, V).
+borrar_num_lista(L, [I | RI], LN, V) :- 
+    nth1(I, L, N),
+    es_lista(N),
+    subtract(N, [V], N1),
+    sustituir(L, LN1, I, N1),
+    borrar_num_lista(LN1, RI, LN, V).
 
 
-borrar_coincidentes(L, LN, I, N) :- contenidoB(I, B),
-                                    contenidoF(I, F),
-                                    contenidoC(I, C),
-                                    borrar_num_lista(L, B, L1, N),
-                                    borrar_num_lista(L1, F, L2, N),
-                                    borrar_num_lista(L2, C, LN, N).
+borrar_coincidentes(L, LN, I, N) :- 
+    contenidoB(I, B),
+    contenidoF(I, F),
+    contenidoC(I, C),
+    borrar_num_lista(L, B, L1, N),
+    borrar_num_lista(L1, F, L2, N),
+    borrar_num_lista(L2, C, LN, N).
 
 regla0(L, [], L, _).
 
-regla0(L, [[X] | _], LA, I) :- borrar_coincidentes(L, LN, I, X),
-                               I1 is I+1,
-                               primeros(LN, _, R1, I),
-                               regla0(LN, R1, LA1, I1),
-                               sustituir(LA1, LA, I, X).
+regla0(L, [[X] | _], LA, I) :-
+    borrar_coincidentes(L, LN, I, X),
+    I1 is I+1,
+    primeros(LN, _, R1, I),
+    regla0(LN, R1, LA1, I1),
+    sustituir(LA1, LA, I, X).
 
 regla0(L, [_ | R], LA, I) :- I1 is I+1,
                              regla0(L, R, LA, I1).
@@ -614,7 +618,7 @@ aplicar_reglas(L, _, LA) :- regla0(L, L, LA1, 1),
                             %imprimir_tablero(LA5),
 
                             aplicar_reglas(LA5, L, LA).
-                            
+
 simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
                              imprimir_tablero(L),
                              poner_posibles(L, L, LA1, 1),
