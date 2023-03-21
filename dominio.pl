@@ -590,44 +590,28 @@ aplicar_reglas(L, L, L).
 aplicar_reglas(L, _, L) :-
     sudoku_completo(L).
 
-aplicar_reglas(L, _, LA) :- 
-    write("Regla0"), nl,
+aplicar_reglas(L, _, LA) :-
+
     regla0(L, L, LA1, 1),
-    imprimir_sudoku(LA1),
 
-    write("Regla1"), nl,
     regla1(LA1, LA2, 1),
-    imprimir_sudoku(LA2),
-                         
-    write("Regla2(2)"), nl,
-    regla2n(LA2, LA3, 1, 2), 
-    imprimir_sudoku(LA3),
 
-    write("Regla2(3)"), nl,
-    regla2n(LA3, LA4, 1, 3), 
-    imprimir_sudoku(LA4),
+    regla2n(LA2, LA3, 1, 2),
+    regla2n(LA3, LA4, 1, 3),
+    regla2n(LA4, LA5, 1, 4),
+    regla2n(LA5, LA6, 1, 5),
+    regla2n(LA6, LA7, 1, 6),
+    regla2n(LA7, LA8, 1, 7),
+    regla2n(LA8, LA9, 1, 8),
 
-    write("Regla2(4)"), nl,
-    regla2n(LA4, LA5, 1, 4), 
-    imprimir_sudoku(LA5),
+    regla3n(LA9, LA10, 1, 3),
+    regla3n(LA10, LA11, 1, 4),
+    regla3n(LA11, LA12, 1, 5),
+    regla3n(LA12, LA13, 1, 6),
+    regla3n(LA13, LA14, 1, 7),
+    regla3n(LA14, LA15, 1, 8),
 
-    write("Regla3(3)"), nl,
-    regla3n(LA5, LA6, 1, 3),
-    imprimir_sudoku(LA6),
-
-    write("Regla3(4)"), nl,
-    regla3n(LA6, LA7, 1, 4),
-    imprimir_sudoku(LA7),
-
-    write("Regla3(5)"), nl,
-    regla3n(LA7, LA8, 1, 5),
-    imprimir_sudoku(LA8),
-
-    write("Regla3(6)"), nl,
-    regla3n(LA8, LA9, 1, 6),
-    imprimir_sudoku(LA9),
-
-    aplicar_reglas(LA9, L, LA).
+    aplicar_reglas(LA15, L, LA).
 
 /** Simplifica el sudoku
     P1 -> Sudoku de entrada
