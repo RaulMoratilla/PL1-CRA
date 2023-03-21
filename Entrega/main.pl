@@ -1,4 +1,8 @@
-/*Sudoku*/
+
+/** Código realizado por:
+    Raúl Moratilla Núñez
+    Abel López Martínez */
+
 
 %%% HECHOS %%%
 
@@ -38,6 +42,7 @@ columna(7, [7,16,25,34,43,52,61,70,79]).
 columna(8, [8,17,26,35,44,53,62,71,80]).
 columna(9, [9,18,27,36,45,54,63,72,81]).
 
+/** Hechos para cargar todos los sudokus de prueba */
 sudoku(L) :- sudoku_prueba1(L).
 sudoku(L) :- sudoku_prueba2(L).
 sudoku(L) :- sudoku_prueba3(L).
@@ -345,7 +350,6 @@ sustituir_elemento(L, LA, V, [PI | _]) :-
     member(V, N),
     sustituir(L, LA1, PI, V),
     borrar_coincidentes(LA1, LA, PI, V).
-    %sustituir_elemento(LA2, LA, V, RI).
 
 sustituir_elemento(L, LA, V, [_ | RI]) :-
     sustituir_elemento(L, LA, V, RI).
@@ -588,7 +592,8 @@ sudoku_completo([P | R]) :-
 
 /** Aplica las reglas hasta que el sudoku esté completo o no se pueda aplicar ninguna regla
     P1 -> Sudoku de entrada
-    P2 -> Sudoku a devolver */
+    P2 -> Sudoku de comparación
+    P3 -> Sudoku a devolver */
 aplicar_reglas(L, L, L).
 
 aplicar_reglas(L, _, L) :-
