@@ -1,5 +1,7 @@
 /*Sudoku*/
 
+%%% HECHOS %%%
+
 /** Predicado que devuelve la lista con los numeros del 1 al 9 */
 numeros(["1","2","3","4","5","6","7","8","9"]).
 
@@ -62,6 +64,8 @@ sudoku(L) :- sudoku_prueba23(L).
 sudoku(L) :- sudoku_prueba24(L).
 sudoku(L) :- sudoku_prueba25(L).
 
+%%% REGLAS AUXILIARES %%%
+
 /** Devuelve (en dos listas) los N primeros elementos de una lista y el resto
     P1 -> Lista original
     P2 -> Lista con los N primeros elementos
@@ -75,42 +79,6 @@ primeros([X | R], [X | R1], R2, N) :-
     N > 0,
     N1 is N-1,
     primeros(R, R1, R2, N1).
-
-%%% IMPRIMIR %%%
-
-/** Imprime una fila del sudoku */
-imprimir_fila([]) :-
-    write(" | "), nl.
-
-imprimir_fila([X | R]) :-
-    write(" | "),
-    write(X),
-    imprimir_fila(R).
-
-/** Imprime el sudoku con funciones auxiliares para dar formato */
-imprimir_sudoku_aux([], _) :-
-    write(" ====================================="), nl, nl, nl.
-
-imprimir_sudoku_aux(L, N) :-
-    1 is mod(N,3),
-    write(" |===========+===========+===========|"), nl,
-    primeros(L, L1, L2, 9),
-    imprimir_fila(L1),
-    N1 is N + 1,
-    imprimir_sudoku_aux(L2, N1).
-
-imprimir_sudoku_aux(L, N) :-
-    write(" |-----------|-----------|-----------|"), nl,
-    primeros(L, L1, L2, 9),
-    imprimir_fila(L1),
-    N1 is N + 1,
-    imprimir_sudoku_aux(L2, N1).
-
-imprimir_sudoku(L) :-
-    write(" ====================================="), nl,
-    primeros(L, L1, L2, 9),
-    imprimir_fila(L1),
-    imprimir_sudoku_aux(L2, 2).
 
 /** Devuelve una lista con los elementos que pertenecen a ambas
     P1 -> L1
@@ -148,8 +116,6 @@ numero(N) :-
 es_lista([]).
 es_lista([_ | _]).
 
-%%% PONER POSIBLES NUMEROS %%%
-
 /** Devuelve la lista de números que están en la lista de entrada
     P1 -> Lista de entrada
     P2 -> Lista de índices
@@ -173,6 +139,83 @@ numeros_not_en_lista(L, LI, N) :-
     numeros_en_lista(L, LI, N1),
     numeros(N2),
     subtract(N2, N1, N).
+
+/** Sustituye el valor de una lista en una posición dada
+    P1 -> Lista original
+    P2 -> Lista con el valor sustituido
+    P3 -> Posición a sustituir
+    P4 -> Valor a sustituir */
+sustituir(L, LN, I, V) :-
+    I2 is I-1,
+    primeros(L, PR, [_ | R], I2),
+    append(PR, [V | R], LN).
+
+/** Devuelve los valores de la lista de entrada que están en la lista de índices
+    P1 -> Lista de entrada
+    P2 -> Lista de indices
+    P3 -> Lista de valores */
+get_valores(_, [], []).
+
+get_valores(L, [I | RI], V) :-
+    get_valores(L, RI, V1),
+    nth1(I, L, N),
+    append([N], V1, V).
+
+/** Devuelve en CONT el número de elementos de la segunda lista que estén en la primera
+    Devuelve true si la segunda lista está contenida en la primera
+    P1 -> Lista de entrada
+    P2 -> Lista de entrada
+    P3 -> Contador */
+member_conj(L, [P | R], CONT) :-
+    es_lista(P),
+    sort(L, NL),
+    sort(P, NP),
+    NL = NP,
+    member_conj(L, R, CONT1),
+    CONT is CONT1 + 1.
+
+member_conj(L, [_ | R], CONT) :-
+    member_conj(L, R, CONT).
+
+member_conj(_, _, 0).
+
+%%% IMPRIMIR %%%
+
+/** Imprime una fila del sudoku */
+imprimir_fila([]) :-
+    write(" | "), nl.
+
+imprimir_fila([X | R]) :-
+    write(" | "),
+    write(X),
+    imprimir_fila(R).
+
+/** Imprime el sudoku con funciones auxiliares para dar formato */
+imprimir_sudoku_aux([], _) :-
+    write(" ====================================="), nl, nl, nl.
+
+imprimir_sudoku_aux(L, N) :-
+    1 is mod(N,3),
+    write(" |===========+===========+===========|"), nl,
+    primeros(L, L1, L2, 9),
+    imprimir_fila(L1),
+    N1 is N + 1,
+    imprimir_sudoku_aux(L2, N1).
+
+imprimir_sudoku_aux(L, N) :-
+    write(" |-----------|-----------|-----------|"), nl,
+    primeros(L, L1, L2, 9),
+    imprimir_fila(L1),
+    N1 is N + 1,
+    imprimir_sudoku_aux(L2, N1).
+
+imprimir_sudoku(L) :-
+    write(" ====================================="), nl,
+    primeros(L, L1, L2, 9),
+    imprimir_fila(L1),
+    imprimir_sudoku_aux(L2, 2).
+
+%%% PONER POSIBLES NUMEROS %%%
 
 /** Devuelve la lista de posibles números para una posición
     P1 -> Sudoku de entrada
@@ -214,16 +257,6 @@ poner_posibles(L, [NUM | R], LA, I) :-
     append([NUM], LA1, LA).
 
 %%% REGLA 0 %%%
-
-/** Sustituye el valor de una lista en una posición dada
-    P1 -> Lista original
-    P2 -> Lista con el valor sustituido
-    P3 -> Posición a sustituir
-    P4 -> Valor a sustituir */
-sustituir(L, LN, I, V) :-
-    I2 is I-1,
-    primeros(L, PR, [_ | R], I2),
-    append(PR, [V | R], LN).
 
 /** Borra un número de una lista de números
     P1 -> Lista original
@@ -299,17 +332,6 @@ sacar_listas_regla1([X | R], LR, LU) :-
     sacar_listas_regla1(R, LR1, LU),
     append([X], LR1, LR).
 
-/** Devuelve los valores de la lista de entrada que están en la lista de índices
-    P1 -> Lista de entrada
-    P2 -> Lista de indices
-    P3 -> Lista de valores */
-get_valores(_, [], []).
-
-get_valores(L, [I | RI], V) :-
-    get_valores(L, RI, V1),
-    nth1(I, L, N),
-    append([N], V1, V).
-
 /** Susituye el valor en la lista de entrada en los índices de la lista de índices
     P1 -> Lista de entrada
     P2 -> Lista de salida
@@ -368,24 +390,6 @@ regla1(L, LA, I) :-
     regla1(LA3, LA, I1).
 
 %%% REGLA 2 %%%
-
-/** Devuelve en CONT el número de elementos de la segunda lista que estén en la primera
-    Devuelve true si la segunda lista está contenida en la primera
-    P1 -> Lista de entrada
-    P2 -> Lista de entrada
-    P3 -> Contador */
-member_conj(L, [P | R], CONT) :-
-    es_lista(P),
-    sort(L, NL),
-    sort(P, NP),
-    NL = NP,
-    member_conj(L, R, CONT1),
-    CONT is CONT1 + 1.
-
-member_conj(L, [_ | R], CONT) :-
-    member_conj(L, R, CONT).
-
-member_conj(_, _, 0).
 
 /** Devuelve conjuntos de N elementos que aparezcan N veces en la lista de entrada
     P1 -> Lista de entrada
