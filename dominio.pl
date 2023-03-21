@@ -1,7 +1,9 @@
 /*Sudoku*/
 
+/** Predicado que devuelve la lista con los numeros del 1 al 9 */
 numeros(["1","2","3","4","5","6","7","8","9"]).
 
+/** Predicado que devuelve la lista de casillas que pertenecen a un bloque */
 bloque(1, [1,2,3,10,11,12,19,20,21]).
 bloque(2, [4,5,6,13,14,15,22,23,24]).
 bloque(3, [7,8,9,16,17,18,25,26,27]).
@@ -12,6 +14,7 @@ bloque(7, [55,56,57,64,65,66,73,74,75]).
 bloque(8, [58,59,60,67,68,69,76,77,78]).
 bloque(9, [61,62,63,70,71,72,79,80,81]).
 
+/** Predicado que devuelve la lista de casillas que pertenecen a una fila */
 fila(1, [1,2,3,4,5,6,7,8,9]).
 fila(2, [10,11,12,13,14,15,16,17,18]).
 fila(3, [19,20,21,22,23,24,25,26,27]).
@@ -22,6 +25,7 @@ fila(7, [55,56,57,58,59,60,61,62,63]).
 fila(8, [64,65,66,67,68,69,70,71,72]).
 fila(9, [73,74,75,76,77,78,79,80,81]).
 
+/** Predicado que devuelve la lista de casillas que pertenecen a una columna */
 columna(1, [1,10,19,28,37,46,55,64,73]).
 columna(2, [2,11,20,29,38,47,56,65,74]).
 columna(3, [3,12,21,30,39,48,57,66,75]).
@@ -383,7 +387,7 @@ imprimir_fila([X | R]) :-
     write(X),
     imprimir_fila(R).
 
-/** Imprime el sudoku */
+/** Imprime el sudoku con funciones auxiliares para dar formato */
 imprimir_sudoku_aux([], _) :-
     write(" ====================================="), nl, nl, nl.
 
@@ -413,6 +417,7 @@ imprimir_sudoku(L) :-
     P2 -> L2
     P3 -> Lista Resultado */
 interseccion([], _, []).
+
 interseccion([X | R], L, S) :-
     member(X, L),
     interseccion(R, L, S1),
@@ -467,7 +472,11 @@ numeros_not_en_lista(L, LI, N) :-
     numeros(N2),
     subtract(N2, N1, N).
 
-
+/** Devuelve la lista de posibles números para una posición
+    P1 -> Sudoku de entrada
+    P2 -> Índice
+    P3 -> Valor del índice
+    P4 -> Sudsoku de salida */
 get_posibles(L, _, N, N) :-
     sudoku(L),
     numero(N).
@@ -483,6 +492,11 @@ get_posibles(L, I, ".", N) :-
     interseccion(N1, N2, N4),
     interseccion(N4, N3, N).
 
+/** Sustituye la lista de salida de get_posibles en la lista de entrada
+    P1 -> Sudoku de entrada
+    P2 -> Sudoku iterador
+    P3 -> Sudoku de salida
+    P4 -> Índice */
 poner_posibles(_, [], [], _).
 
 poner_posibles(L, ["." | R], LA, I) :-
@@ -590,10 +604,19 @@ get_valores(L, [I | RI], V) :-
     nth1(I, L, N),
     append([N], V1, V).
 
-/*
-    Si aparece en el primero seguimos iterando ¿?
+/*  ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    Si aparece en el primero seguimos iterando ??????????????????????????????????????????????????????????????????????????????????
+    ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    ?????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
 */
-/** */
+/** Susituye el valor en la lista de entrada en los índices de la lista de índices
+    P1 -> Lista de entrada
+    P2 -> Lista de salida
+    P3 -> Valor a sustituir
+    P4 -> Lista de índices */
 sustituir_elemento(L, L, _, []).
 
 sustituir_elemento(L, LA, V, [PI | RI]) :-
@@ -604,109 +627,147 @@ sustituir_elemento(L, LA, V, [PI | RI]) :-
     borrar_coincidentes(LA1, LA2, PI, V),
     sustituir_elemento(LA2, LA, V, RI).
 
-sustituir_elemento(L, LA, V, [_ | RI]) :- sustituir_elemento(L, LA, V, RI).
+sustituir_elemento(L, LA, V, [_ | RI]) :-
+    sustituir_elemento(L, LA, V, RI).
 
-
+/** Itera el sudoku sustituyendo los elementos de la tercera lista en los indices de IDS
+    P1 -> Sudoku de entrada
+    P2 -> Sudoku a devolver
+    P3 -> Lista de listas de valores a sustituir
+    P4 -> Lista de índices */
 sustituir_si_aparece_regla1(L, L, [], _). 
 
-sustituir_si_aparece_regla1(L, LA, [PLUB | RLUB], IDS) :- sustituir_elemento(L, LA1, PLUB, IDS),
-                                                          sustituir_si_aparece_regla1(LA1, LA, RLUB, IDS).
+sustituir_si_aparece_regla1(L, LA, [PLUB | RLUB], IDS) :-
+    sustituir_elemento(L, LA1, PLUB, IDS),
+    sustituir_si_aparece_regla1(LA1, LA, RLUB, IDS).
 
+/** Regla 1: Si hay un número que aparece en una sola de las listas que aparecen
+    en una fila, columna o cuadro, cambiamos la lista por el número y
+    borramos el número del resto de listas de la fila, columna o cuadro
+    P1 -> Sudoku de referencia
+    P2 -> Sudoku a devolver
+    P3 -> Iterador de posición */
 regla1(L, L, 10).
 
-/*
-    Estamos iterando varias veces cada fila, col, bloque (habria que cambiarlo)
-*/
-regla1(L, LA, I) :- bloque(I, B),
-                    columna(I, C),
-                    fila(I, F),
+regla1(L, LA, I) :-
+    bloque(I, B),
+    columna(I, C),
+    fila(I, F),
 
-                    get_valores(L, B, VB),
-                    sacar_listas_regla1(VB, _, LUB),
-                    sustituir_si_aparece_regla1(L, LA1, LUB, B),
-                    
-                    get_valores(LA1, C, VC),
-                    sacar_listas_regla1(VC, _, LUC),
-                    sustituir_si_aparece_regla1(LA1, LA2, LUC, C),
-                    
-                    get_valores(LA2, F, VF),
-                    sacar_listas_regla1(VF, _, LUF),
-                    sustituir_si_aparece_regla1(LA2, LA3, LUF, F),
-                    
-                    I1 is I + 1,
-                    regla1(LA3, LA, I1).
+    get_valores(L, B, VB),
+    sacar_listas_regla1(VB, _, LUB),
+    sustituir_si_aparece_regla1(L, LA1, LUB, B),
+    
+    get_valores(LA1, C, VC),
+    sacar_listas_regla1(VC, _, LUC),
+    sustituir_si_aparece_regla1(LA1, LA2, LUC, C),
+    
+    get_valores(LA2, F, VF),
+    sacar_listas_regla1(VF, _, LUF),
+    sustituir_si_aparece_regla1(LA2, LA3, LUF, F),
+    
+    I1 is I + 1,
+    regla1(LA3, LA, I1).
 
-member_conj(L, [P | R], CONT) :- es_lista(P),
-                                 sort(L, NL),
-                                 sort(P, NP),
-                                 NL = NP,
-                                 member_conj(L, R, CONT1),
-                                 CONT is CONT1 + 1.
+/** Devuelve en CONT el número de elementos de la primera lista que estén en la segunda
+    P1 -> Lista de entrada
+    P2 -> Lista de entrada
+    P3 -> Contador */
+member_conj(L, [P | R], CONT) :-
+    es_lista(P),
+    sort(L, NL),
+    sort(P, NP),
+    NL = NP,
+    member_conj(L, R, CONT1),
+    CONT is CONT1 + 1.
 
-member_conj(L, [_ | R], CONT) :- member_conj(L, R, CONT).
+member_conj(L, [_ | R], CONT) :-
+    member_conj(L, R, CONT).
 
 member_conj(_, _, 0).
 
+/** Devuelve conjuntos de N elementos que aparezcan N veces en la lista de entrada
+    P1 -> Lista de entrada
+    P2 -> Lista de salida
+    P3 -> Número de elementos */
 sacar_n_iguales([], [], _).
 
-sacar_n_iguales([X | R], LP, N) :- es_lista(X),
-                                   length(X, N),
-                                   member_conj(X, R, CONT),
-                                   CONT is N-1,
-                                   sacar_n_iguales(R, LP1, N),
-                                   append(LP1, [X], LP).
+sacar_n_iguales([X | R], LP, N) :-
+    es_lista(X),
+    length(X, N),
+    member_conj(X, R, CONT),
+    CONT is N-1,
+    sacar_n_iguales(R, LP1, N),
+    append(LP1, [X], LP).
 
-sacar_n_iguales([_ | R], LP, N) :- sacar_n_iguales(R, LP, N).
+sacar_n_iguales([_ | R], LP, N) :-
+    sacar_n_iguales(R, LP, N).
 
+/**
+*/
 eliminar_elemento(L, L, [], _).
 
-eliminar_elemento(L, LA, [P | R], I) :- nth1(I, L, V),
-                                        subtract(V, [P], NV),
-                                        sustituir(L, LA1, I, NV),
-                                        eliminar_elemento(LA1, LA, R, I).
+eliminar_elemento(L, LA, [P | R], I) :-
+    nth1(I, L, V),
+    subtract(V, [P], NV),
+    sustituir(L, LA1, I, NV),
+    eliminar_elemento(LA1, LA, R, I).
 
+/**
+*/
 eliminar_elementos_lista(L, L, _, []).
 
-eliminar_elementos_lista(L, LA, P, [PI | RI]) :- sort(P, NP),
-                                                 nth1(PI, L, V),
-                                                 es_lista(V),
-                                                 sort(V, NV),
-                                                 NP = NV,
-                                                 eliminar_elementos_lista(L, LA, P, RI).
+eliminar_elementos_lista(L, LA, P, [PI | RI]) :-
+    sort(P, NP),
+    nth1(PI, L, V),
+    es_lista(V),
+    sort(V, NV),
+    NP = NV,
+    eliminar_elementos_lista(L, LA, P, RI).
 
-eliminar_elementos_lista(L, LA, P, [PI | RI]) :- nth1(PI, L, V),
-                                                 es_lista(V),
-                                                 eliminar_elemento(L, LA1, P, PI),
-                                                 eliminar_elementos_lista(LA1, LA, P, RI).
+eliminar_elementos_lista(L, LA, P, [PI | RI]) :-
+    nth1(PI, L, V),
+    es_lista(V),
+    eliminar_elemento(L, LA1, P, PI),
+    eliminar_elementos_lista(LA1, LA, P, RI).
 
-eliminar_elementos_lista(L, LA, P, [_ | RI]) :- eliminar_elementos_lista(L, LA, P, RI).
+eliminar_elementos_lista(L, LA, P, [_ | RI]) :-
+    eliminar_elementos_lista(L, LA, P, RI).
 
+/**
+*/
 sustituir_si_aparece(L, L, [], _).
 
-sustituir_si_aparece(L, LA, [PLN | RLN], IDS) :- eliminar_elementos_lista(L, LA1, PLN, IDS),
-                                                 sustituir_si_aparece(LA1, LA, RLN, IDS).
+sustituir_si_aparece(L, LA, [PLN | RLN], IDS) :-
+    eliminar_elementos_lista(L, LA1, PLN, IDS),
+    sustituir_si_aparece(LA1, LA, RLN, IDS).
 
+/**
+*/
 regla_n(L, L, 10, _).
 
-regla_n(L, LA, I, N) :- bloque(I, B),
-                        columna(I, C),
-                        fila(I, F),
+regla_n(L, LA, I, N) :-
+    bloque(I, B),
+    columna(I, C),
+    fila(I, F),
 
-                        get_valores(L, B, VB),
-                        sacar_n_iguales(VB, LPB, N),
-                        sustituir_si_aparece(L, LA1, LPB, B),
-                        
-                        get_valores(LA1, C, VC),
-                        sacar_n_iguales(VC, LPC, N),
-                        sustituir_si_aparece(LA1, LA2, LPC, C),
-                        
-                        get_valores(LA2, F, VF),
-                        sacar_n_iguales(VF, LPF, N),
-                        sustituir_si_aparece(LA2, LA3, LPF, F),
-                        
-                        I1 is I + 1,
-                        regla_n(LA3, LA, I1, N).
+    get_valores(L, B, VB),
+    sacar_n_iguales(VB, LPB, N),
+    sustituir_si_aparece(L, LA1, LPB, B),
 
+    get_valores(LA1, C, VC),
+    sacar_n_iguales(VC, LPC, N),
+    sustituir_si_aparece(LA1, LA2, LPC, C),
+
+    get_valores(LA2, F, VF),
+    sacar_n_iguales(VF, LPF, N),
+    sustituir_si_aparece(LA2, LA3, LPF, F),
+
+    I1 is I + 1,
+    regla_n(LA3, LA, I1, N).
+
+/**
+*/
 sacar_conjuntos_regla_3_b3([], _, []).
 
 sacar_conjuntos_regla_3_b3([PV | RV], CACT, C) :-
@@ -721,6 +782,8 @@ sacar_conjuntos_regla_3_b3([PV | RV], CACT, C) :-
 sacar_conjuntos_regla_3_b3([_ | RV], CACT, C) :-
     sacar_conjuntos_regla_3_b3(RV, CACT, C).
 
+/**
+*/
 sacar_conjuntos_regla_3_b2([], _, []).
 
 sacar_conjuntos_regla_3_b2([PV | RV], CACT, C) :-
@@ -737,6 +800,8 @@ sacar_conjuntos_regla_3_b2([PV | RV], CACT, C) :-
 sacar_conjuntos_regla_3_b2([_ | RV], CACT, C) :-
     sacar_conjuntos_regla_3_b2(RV, CACT, C).
 
+/**
+*/
 sacar_conjuntos_regla_3_b1([], []).
 
 sacar_conjuntos_regla_3_b1([PV | RV], C) :-
@@ -750,6 +815,8 @@ sacar_conjuntos_regla_3_b1([PV | RV], C) :-
 sacar_conjuntos_regla_3_b1([_ | RV], C) :-
     sacar_conjuntos_regla_3_b1(RV, C).
 
+/**
+*/
 sustituir_conjunto(L, L, [], _).
 
 sustituir_conjunto(L, LA, [PI | RI], C) :-
@@ -770,12 +837,16 @@ sustituir_conjunto(L, LA, [PI | RI], C) :-
 sustituir_conjunto(L, LA, [_ | RI], C) :-
     sustituir_conjunto(L, LA, RI, C).
 
+/**
+*/
 sustituir_si_aparece_regla3(L, L, _, []).
 
 sustituir_si_aparece_regla3(L, LA, LI, [PC | RC]) :-
     sustituir_conjunto(L, LA1, LI, PC),
     sustituir_si_aparece_regla3(LA1, LA, LI, RC).
 
+/**
+*/
 regla3(L, L, 10).
 
 regla3(L, LA, I) :-
@@ -798,42 +869,53 @@ regla3(L, LA, I) :-
     I1 is I+1,
     regla3(LA3, LA, I1).
 
+/**
+*/
 sudoku_completo([]).
-sudoku_completo([P | R]) :- numero(P), sudoku_completo(R).
+sudoku_completo([P | R]) :-
+    numero(P),
+    sudoku_completo(R).
 
+/**
+*/
 aplicar_reglas(L, L, L).
 
-aplicar_reglas(L, _, L) :- sudoku_completo(L).
+aplicar_reglas(L, _, L) :-
+    sudoku_completo(L).
 
-aplicar_reglas(L, _, LA) :- write("Regla0"), nl,
-                            regla0(L, L, LA1, 1),
-                            imprimir_sudoku(LA1),
+aplicar_reglas(L, _, LA) :-
+    write("Regla0"), nl,
+    regla0(L, L, LA1, 1),
+    imprimir_sudoku(LA1),
 
-                            write("Regla1"), nl,
-                            regla1(LA1, LA2, 1),
-                            imprimir_sudoku(LA2),
-                         
-                            write("Regla2"), nl,
-                            regla_n(LA2, LA3, 1, 2), 
-                            imprimir_sudoku(LA3),
+    write("Regla1"), nl,
+    regla1(LA1, LA2, 1),
+    imprimir_sudoku(LA2),
+    
+    write("Regla2"), nl,
+    regla_n(LA2, LA3, 1, 2), 
+    imprimir_sudoku(LA3),
 
-                            write("Regla3"), nl,
-                            regla3(LA3, LA4, 1),
-                            imprimir_sudoku(LA4),
+    write("Regla3"), nl,
+    regla3(LA3, LA4, 1),
+    imprimir_sudoku(LA4),
 
-                            /*regla_n(LA4, LA5, 1, 4),
-                            write("Regla4"), nl,
-                            imprimir_sudoku(LA5),*/
+    /*regla_n(LA4, LA5, 1, 4),
+    write("Regla4"), nl,
+    imprimir_sudoku(LA5),*/
 
-                            aplicar_reglas(LA4, L, LA).
+    aplicar_reglas(LA4, L, LA).
 
-simplificar_sudoku(L, LA) :- write("Sudoku inicial"), nl,
-                             imprimir_sudoku(L),
-                             poner_posibles(L, L, LA1, 1),
+/**
+*/
+simplificar_sudoku(L, LA) :-
+    write("Sudoku inicial"), nl,
+    imprimir_sudoku(L),
+    poner_posibles(L, L, LA1, 1),
 
-                             write("Sudoku con posibles"), nl,
-                             imprimir_sudoku(LA1),
-                             aplicar_reglas(LA1, [], LA),
+    write("Sudoku con posibles"), nl,
+    imprimir_sudoku(LA1),
+    aplicar_reglas(LA1, [], LA),
 
-                             write("Sudoku simplificado"), nl,
-                             imprimir_sudoku(LA).
+    write("Sudoku simplificado"), nl,
+    imprimir_sudoku(LA).
