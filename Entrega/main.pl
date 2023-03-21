@@ -626,13 +626,13 @@ aplicar_reglas(L, _, LA) :-
     P1 -> Sudoku de entrada
     P2 -> Sudoku a devolver */
 simplificar_sudoku(L, LA) :-
-    write("Sudoku inicial"), nl,
+    write("Sudoku inicial:"), nl, nl,
     imprimir_sudoku(L),
     poner_posibles(L, L, LA1, 1),
 
-    write("Sudoku con posibles"), nl,
+    write("Sudoku con posibles:"), nl, nl,
     imprimir_sudoku(LA1),
     aplicar_reglas(LA1, [], LA),
 
-    write("Sudoku simplificado"), nl,
+    write("Sudoku simplificado:"), nl, nl,
     imprimir_sudoku(LA).
