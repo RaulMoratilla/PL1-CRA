@@ -374,24 +374,39 @@ primeros([X | R], [X | R1], R2, N) :-
     N1 is N-1,
     primeros(R, R1, R2, N1).
 
-/** Imprime una fila del tablero */
+/** Imprime una fila del sudoku */
 imprimir_fila([]) :-
-    write("|"), nl.
+    write(" | "), nl.
 
 imprimir_fila([X | R]) :-
-    write("|"),
+    write(" | "),
     write(X),
     imprimir_fila(R).
 
-/** Imprime el tablero */
-imprimir_tablero([]) :-
-    write("-------------------"), nl, nl, nl.
+/** Imprime el sudoku */
+imprimir_sudoku_aux([], _) :-
+    write(" ====================================="), nl, nl, nl.
 
-imprimir_tablero(L) :-
-    write("-------------------"), nl,
+imprimir_sudoku_aux(L, N) :-
+    1 is mod(N,3),
+    write(" |===========+===========+===========|"), nl,
     primeros(L, L1, L2, 9),
     imprimir_fila(L1),
-    imprimir_tablero(L2).
+    N1 is N + 1,
+    imprimir_sudoku_aux(L2, N1).
+
+imprimir_sudoku_aux(L, N) :-
+    write(" |-----------|-----------|-----------|"), nl,
+    primeros(L, L1, L2, 9),
+    imprimir_fila(L1),
+    N1 is N + 1,
+    imprimir_sudoku_aux(L2, N1).
+
+imprimir_sudoku(L) :-
+    write(" ====================================="), nl,
+    primeros(L, L1, L2, 9),
+    imprimir_fila(L1),
+    imprimir_sudoku_aux(L2, 2).
 
 /** Intersección entre dos listas
     P1 -> L1
@@ -605,15 +620,19 @@ regla1(L, L, 10).
 regla1(L, LA, I) :- bloque(I, B),
                     columna(I, C),
                     fila(I, F),
+
                     get_valores(L, B, VB),
-                    get_valores(L, C, VC),
-                    get_valores(L, F, VF),
                     sacar_listas_regla1(VB, _, LUB),
-                    sacar_listas_regla1(VC, _, LUC),
-                    sacar_listas_regla1(VF, _, LUF),
                     sustituir_si_aparece_regla1(L, LA1, LUB, B),
+                    
+                    get_valores(LA1, C, VC),
+                    sacar_listas_regla1(VC, _, LUC),
                     sustituir_si_aparece_regla1(LA1, LA2, LUC, C),
+                    
+                    get_valores(LA2, F, VF),
+                    sacar_listas_regla1(VF, _, LUF),
                     sustituir_si_aparece_regla1(LA2, LA3, LUF, F),
+                    
                     I1 is I + 1,
                     regla1(LA3, LA, I1).
 
@@ -672,54 +691,149 @@ regla_n(L, L, 10, _).
 regla_n(L, LA, I, N) :- bloque(I, B),
                         columna(I, C),
                         fila(I, F),
+
                         get_valores(L, B, VB),
-                        get_valores(L, C, VC),
-                        get_valores(L, F, VF),
                         sacar_n_iguales(VB, LPB, N),
-                        sacar_n_iguales(VC, LPC, N),
-                        sacar_n_iguales(VF, LPF, N),
                         sustituir_si_aparece(L, LA1, LPB, B),
+                        
+                        get_valores(LA1, C, VC),
+                        sacar_n_iguales(VC, LPC, N),
                         sustituir_si_aparece(LA1, LA2, LPC, C),
+                        
+                        get_valores(LA2, F, VF),
+                        sacar_n_iguales(VF, LPF, N),
                         sustituir_si_aparece(LA2, LA3, LPF, F),
+                        
                         I1 is I + 1,
                         regla_n(LA3, LA, I1, N).
 
-tablero_completo([]).
-tablero_completo([P | R]) :- numero(P), tablero_completo(R).
+sacar_conjuntos_regla_3_b3([], _, []).
+
+sacar_conjuntos_regla_3_b3([PV | RV], CACT, C) :-
+    es_lista(PV),
+    length(PV, N),
+    between(2, 3, N),
+    union(CACT, PV, CACT1),
+    length(CACT1, 3),
+    sacar_conjuntos_regla_3_b3(RV, CACT, C1),
+    append(C1, [CACT1], C).
+
+sacar_conjuntos_regla_3_b3([_ | RV], CACT, C) :-
+    sacar_conjuntos_regla_3_b3(RV, CACT, C).
+
+sacar_conjuntos_regla_3_b2([], _, []).
+
+sacar_conjuntos_regla_3_b2([PV | RV], CACT, C) :-
+    es_lista(PV),
+    length(PV, N),
+    between(2, 3, N),
+    union(CACT, PV, CACT1),
+    length(CACT1, LC),
+    between(2, 3, LC),
+    sacar_conjuntos_regla_3_b3(RV, CACT1, C1),
+    sacar_conjuntos_regla_3_b2(RV, CACT, C2),
+    append(C1, C2, C).
+
+sacar_conjuntos_regla_3_b2([_ | RV], CACT, C) :-
+    sacar_conjuntos_regla_3_b2(RV, CACT, C).
+
+sacar_conjuntos_regla_3_b1([], []).
+
+sacar_conjuntos_regla_3_b1([PV | RV], C) :-
+    es_lista(PV),
+    length(PV, N),
+    between(2, 3, N),
+    sacar_conjuntos_regla_3_b2(RV, PV, C1),
+    sacar_conjuntos_regla_3_b1(RV, C2),
+    append(C1, C2, C).
+
+sacar_conjuntos_regla_3_b1([_ | RV], C) :-
+    sacar_conjuntos_regla_3_b1(RV, C).
+
+sustituir_conjunto(L, L, [], _).
+
+sustituir_conjunto(L, LA, [PI | RI], C) :-
+    nth1(PI, L, E),
+    es_lista(E),
+    union(C, E, U),
+    sort(U, US),
+    sort(C, CS),
+    US = CS,
+    sustituir_conjunto(L, LA, RI, C).
+
+sustituir_conjunto(L, LA, [PI | RI], C) :-
+    nth1(PI, L, E),
+    es_lista(E),
+    eliminar_elemento(L, LA1, C, PI),
+    sustituir_conjunto(LA1, LA, RI, C).
+
+sustituir_conjunto(L, LA, [_ | RI], C) :-
+    sustituir_conjunto(L, LA, RI, C).
+
+sustituir_si_aparece_regla3(L, L, _, []).
+
+sustituir_si_aparece_regla3(L, LA, LI, [PC | RC]) :-
+    sustituir_conjunto(L, LA1, LI, PC),
+    sustituir_si_aparece_regla3(LA1, LA, LI, RC).
+
+regla3(L, L, 10).
+
+regla3(L, LA, I) :-
+    bloque(I, B),
+    columna(I, C),
+    fila(I, F),
+    
+    get_valores(L, B, VB),
+    sacar_conjuntos_regla_3_b1(VB, CB),
+    sustituir_si_aparece_regla3(L, LA1, B, CB),
+    
+    get_valores(L, C, VC),
+    sacar_conjuntos_regla_3_b1(VC, CC),
+    sustituir_si_aparece_regla3(LA1, LA2, C, CC),
+
+    get_valores(L, F, VF),
+    sacar_conjuntos_regla_3_b1(VF, CF),
+    sustituir_si_aparece_regla3(LA2, LA3, F, CF),
+    
+    I1 is I+1,
+    regla3(LA3, LA, I1).
+
+sudoku_completo([]).
+sudoku_completo([P | R]) :- numero(P), sudoku_completo(R).
 
 aplicar_reglas(L, L, L).
 
-aplicar_reglas(L, _, L) :- tablero_completo(L).
+aplicar_reglas(L, _, L) :- sudoku_completo(L).
 
-aplicar_reglas(L, _, LA) :- regla0(L, L, LA1, 1),
-                            write("Regla0"), nl,
-                            imprimir_tablero(LA1),
+aplicar_reglas(L, _, LA) :- write("Regla0"), nl,
+                            regla0(L, L, LA1, 1),
+                            imprimir_sudoku(LA1),
 
-                            regla1(LA1, LA2, 1),
                             write("Regla1"), nl,
-                            imprimir_tablero(LA2),
+                            regla1(LA1, LA2, 1),
+                            imprimir_sudoku(LA2),
                          
-                            regla_n(LA2, LA3, 1, 2),
                             write("Regla2"), nl,
-                            imprimir_tablero(LA3),
+                            regla_n(LA2, LA3, 1, 2), 
+                            imprimir_sudoku(LA3),
 
-                            /*regla_n(LA3, LA4, 1, 3),
                             write("Regla3"), nl,
-                            imprimir_tablero(LA4),
+                            regla3(LA3, LA4, 1),
+                            imprimir_sudoku(LA4),
 
-                            regla_n(LA4, LA5, 1, 4),
+                            /*regla_n(LA4, LA5, 1, 4),
                             write("Regla4"), nl,
-                            imprimir_tablero(LA5),*/
+                            imprimir_sudoku(LA5),*/
 
-                            aplicar_reglas(LA3, L, LA).
+                            aplicar_reglas(LA4, L, LA).
 
-simplificar_sudoku(L, LA) :- write("Tablero inicial"), nl,
-                             imprimir_tablero(L),
+simplificar_sudoku(L, LA) :- write("Sudoku inicial"), nl,
+                             imprimir_sudoku(L),
                              poner_posibles(L, L, LA1, 1),
 
-                             write("Tablero con posibles"), nl,
-                             imprimir_tablero(LA1),
+                             write("Sudoku con posibles"), nl,
+                             imprimir_sudoku(LA1),
                              aplicar_reglas(LA1, [], LA),
 
-                             write("Tablero simplificado"), nl,
-                             imprimir_tablero(LA).
+                             write("Sudoku simplificado"), nl,
+                             imprimir_sudoku(LA).
